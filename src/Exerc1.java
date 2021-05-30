@@ -37,21 +37,22 @@ public class Exerc1 {
                                        List<Pair<Integer, Integer>> track,
                                        List<List<Pair<Integer, Integer>>> solutions) {
         boolean currentIsValid = isValid(currentPosition, track, size);
-        track.add(currentPosition);
         if (currentIsValid) {
+            track.add(currentPosition);
             Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(currentPosition, size);
             nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, track, solutions));
+            return;
         }
-        if (!currentIsValid && !track.isEmpty()) {
-            Pair<Integer, Integer> LastPosition = track.remove(track.size() - 1);
-            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(LastPosition, size);
-            nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, track, solutions));
-        } else if (track.size() == size) {
+        if (track.size() == size) {
             solutions.add(new ArrayList<>(track));
             List<Pair<Integer, Integer>> newTrack = new ArrayList<>(track);
-            Pair<Integer, Integer> LastPosition = track.remove(track.size() - 1);
-            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(LastPosition, size);
+            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(currentPosition, size);
             nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, newTrack, solutions));
+            return;
+        }
+        if (!track.isEmpty()) {
+            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(currentPosition, size);
+            nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, track, solutions));
         }
     }
 
