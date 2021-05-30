@@ -1,60 +1,99 @@
-import javafx.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Exerc1 {
-    public static void main(String[] args){
-
-
-    }
-
-    private static Stack<Pair<Integer, Integer>> nQueenSolve(int size) {
-        int[][] board = new int[size][size];
-        Pair<Integer, Integer> currentPosition = new Pair<>(0, 0);
-        List<Pair<Integer, Integer>> battery = new ArrayList<>();
-        return nQueenSolveAux(size, board, currentPosition, battery);
-    }
-
-    private static Stack<Pair<Integer, Integer>> nQueenSolveAux(int size, int[][] board, Pair<Integer, Integer> currentPosition, List<Pair<Integer, Integer>> battery) {
-        if(isValid(currentPosition, battery, size)) {
-            battery.add(currentPosition);
+    public static void main(String[] args) {
+        List<List<Pair<Integer, Integer>>> solutions = nQueenSolve(7);
+        if (solutions.isEmpty()) {
+            System.out.println("There is no solution");
+        } else {
+            solutions.forEach(solution -> {
+                System.out.println("====================");
+                System.out.println(String.join("||", solution.toString()));
+                System.out.println("====================");
+            });
         }
-        return nQueenSolveAux(size, board, currentPosition, battery);
     }
 
-    private static boolean isValid(Pair<Integer, Integer> currentPosition, List<Pair<Integer, Integer>> battery, int size) {
+    private static List<List<Pair<Integer, Integer>>> nQueenSolve(int size) {
+        Optional<Pair<Integer, Integer>> currentPosition = Optional.of(new Pair<>(0, 0));
+        List<List<Pair<Integer, Integer>>> solutions = new ArrayList<>();
+        List<Pair<Integer, Integer>> board = new ArrayList<>();
+        while (currentPosition.isPresent()) {
+            board.add(currentPosition.get());
+            currentPosition = generateNextSinglePosition(currentPosition.get(), size);
+        }
+        board.forEach(position -> {
+            List<Pair<Integer, Integer>> track = new ArrayList<>();
+            nQueenSolveAux(size, position, track, solutions);
+        });
+        return solutions;
+    }
+
+    private static void nQueenSolveAux(int size, Pair<Integer, Integer> currentPosition,
+                                       List<Pair<Integer, Integer>> track,
+                                       List<List<Pair<Integer, Integer>>> solutions) {
+        boolean currentIsValid = isValid(currentPosition, track, size);
+        track.add(currentPosition);
+        if (currentIsValid) {
+            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(currentPosition, size);
+            nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, track, solutions));
+        }
+        if (!currentIsValid && !track.isEmpty()) {
+            Pair<Integer, Integer> LastPosition = track.remove(track.size() - 1);
+            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(LastPosition, size);
+            nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, track, solutions));
+        } else if (track.size() == size) {
+            solutions.add(new ArrayList<>(track));
+            List<Pair<Integer, Integer>> newTrack = new ArrayList<>(track);
+            Pair<Integer, Integer> LastPosition = track.remove(track.size() - 1);
+            Optional<Pair<Integer, Integer>> nextP = generateNextSinglePosition(LastPosition, size);
+            nextP.ifPresent(integerIntegerPair -> nQueenSolveAux(size, integerIntegerPair, newTrack, solutions));
+        }
+    }
+
+    private static boolean isValid(Pair<Integer, Integer> currentPosition, List<Pair<Integer, Integer>> track,
+                                   int size) {
         int lineIndex = currentPosition.getKey();
         int columnIndex = currentPosition.getValue();
-        for(Pair<Integer, Integer> pair : battery) {
-            if(pair.getKey() == lineIndex || pair.getValue() == columnIndex) {
+        for (Pair<Integer, Integer> pair : track) {
+            if (pair.getKey() == lineIndex || pair.getValue() == columnIndex) {
                 return false;
             }
         }
-        for(int i = 1; i < size; i++) {
+        for (int i = 1; i < size; i++) {
             Pair<Integer, Integer> NE, NW, SE, SW;
             NE = new Pair<>(currentPosition.getKey() - i, currentPosition.getValue() + i);
             NW = new Pair<>(currentPosition.getKey() - i, currentPosition.getValue() - i);
             SE = new Pair<>(currentPosition.getKey() + i, currentPosition.getValue() + i);
             SW = new Pair<>(currentPosition.getKey() + i, currentPosition.getValue() - i);
-            if(NE.getKey() >= 0 && NE.getValue() < size) {
-                if(battery.contains(NE)) return false;
+            if (NE.getKey() >= 0 && NE.getValue() < size) {
+                if (track.contains(NE)) return false;
             }
-            if(NW.getKey() >= 0 && NW.getValue() >= 0) {
-                if(battery.contains(NW)) return false;
+            if (NW.getKey() >= 0 && NW.getValue() >= 0) {
+                if (track.contains(NW)) return false;
             }
-            if(SE.getKey() < size && SE.getValue() < size) {
-                if(battery.contains(SE)) return false;
+            if (SE.getKey() < size && SE.getValue() < size) {
+                if (track.contains(SE)) return false;
             }
-            if(SW.getKey() < size && SW.getValue() >= 0) {
-                if(battery.contains(SW)) return false;
+            if (SW.getKey() < size && SW.getValue() >= 0) {
+                if (track.contains(SW)) return false;
             }
         }
         return true;
     }
 
-    private static List<Pair<Integer, Integer>> generateNextPosition(Pair<Integer, Integer> currentPosition) {
-
+    private static Optional<Pair<Integer, Integer>> generateNextSinglePosition(Pair<Integer, Integer> currentPosition, int n) {
+        if (currentPosition.getValue() == n - 1) {
+            if (currentPosition.getKey() == n - 1) {
+                return Optional.empty();
+            }
+            return Optional.of(new Pair<>(currentPosition.getKey() + 1, 0));
+        } else {
+            return Optional.of(new Pair<>(currentPosition.getKey(), currentPosition.getValue() + 1));
+        }
     }
 }
