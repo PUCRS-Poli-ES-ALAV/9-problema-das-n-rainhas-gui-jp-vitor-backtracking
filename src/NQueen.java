@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class NQueen {
     private final int nRainhas;
 
@@ -5,35 +8,48 @@ public class NQueen {
         this.nRainhas = rainhas;
     }
 
-    public void solve(){
-        int[][] tabuleiro = new int [nRainhas][nRainhas];
+    public void solve() {
+
+        int[][] tabuleiro = createBoard();
+        List<String> solutions = new ArrayList<>();
+
+        if (!solve(tabuleiro, 0, solutions)) {
+            System.out.print("nenhuma solução encontrada");
+            return;
+        }
+        for (int i = 0; i < solutions.size(); i++) {
+            System.out.println("solução: " + i + "\n");
+            System.out.println(solutions.get(i));
+            System.out.println();
+        }
+    }
+
+    private int[][] createBoard() {
+        int[][] tabuleiro = new int[nRainhas][nRainhas];
         for (int i = 0; i < tabuleiro.length; i++) {
             for (int j = 0; j < tabuleiro.length; j++) {
                 tabuleiro[i][j] = 0;
             }
         }
-        if (!solve(tabuleiro, 0)) {
-            System.out.print("Solução não encontrada");
-            return;
-        }
-        printSolution(tabuleiro);
+        return tabuleiro;
     }
 
-    private boolean solve(int[][] tabuleiro, int col){
-        if (col >= nRainhas)
+    private boolean solve(int[][] tabuleiro, int col, List<String> solutions) {
+        if (col >= nRainhas) {
+            solutions.add(printSolution(tabuleiro));
             return true;
+        }
         for (int i = 0; i < nRainhas; i++) {
             if (isSafe(tabuleiro, i, col)) {
                 tabuleiro[i][col] = 1;
-                if (solve(tabuleiro, col + 1))
-                    return true;
+                solve(tabuleiro, col + 1, solutions);
                 tabuleiro[i][col] = 0;
             }
         }
-        return false;
+        return solutions.size() > 0;
     }
 
-    private boolean isSafe(int[][] tabuleiro, int linha, int col){
+    private boolean isSafe(int[][] tabuleiro, int linha, int col) {
         int i, j;
 
         for (i = 0; i < col; i++)
@@ -51,11 +67,13 @@ public class NQueen {
         return true;
     }
 
-    private void printSolution(int[][] tabuleiro){
+    private String printSolution(int[][] tabuleiro) {
+        StringBuilder msg = new StringBuilder();
         for (int i = 0; i < nRainhas; i++) {
             for (int j = 0; j < nRainhas; j++)
-                System.out.print(" " + tabuleiro[i][j] + " ");
-            System.out.println();
+                msg.append(" " + tabuleiro[i][j] + " ");
+            msg.append("\n");
         }
+        return msg.toString();
     }
 }
